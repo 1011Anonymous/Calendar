@@ -7,21 +7,17 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.wea_cal_note.R
 import com.kizitonwose.calendar.compose.HorizontalCalendar
 import com.kizitonwose.calendar.compose.rememberCalendarState
 import com.kizitonwose.calendar.core.CalendarDay
@@ -32,8 +28,10 @@ import com.kizitonwose.calendar.core.nextMonth
 import com.kizitonwose.calendar.core.previousMonth
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
+import java.time.Year
 import java.time.YearMonth
 import java.time.format.TextStyle
+import java.util.Calendar
 import java.util.Locale
 
 @Composable
@@ -57,26 +55,29 @@ fun CalendarUI() {
     )
     val coroutineScope = rememberCoroutineScope()
     val visibleMonth = rememberFirstMostVisibleMonth(state = state, viewportPercent = 90f)
+    var showDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
     ) {
-
-            CalendarTitle(
-                currentMonth = visibleMonth.yearMonth,
-                goToPrevious = {
-                    coroutineScope.launch {
-                        state.animateScrollToMonth(state.firstVisibleMonth.yearMonth.previousMonth)
-                    }
-                },
-                goToNext = {
-                    coroutineScope.launch {
-                        state.animateScrollToMonth(state.firstVisibleMonth.yearMonth.nextMonth)
-                    }
-                },
-            )
+        CalendarTitle(
+            currentMonth = visibleMonth.yearMonth,
+            goToPrevious = {
+                coroutineScope.launch {
+                    state.animateScrollToMonth(state.firstVisibleMonth.yearMonth.previousMonth)
+                }
+            },
+            goToNext = {
+                coroutineScope.launch {
+                    state.animateScrollToMonth(state.firstVisibleMonth.yearMonth.nextMonth)
+                }
+            },
+            onClick = {
+                showDialog = true
+            },
+        )
 
         HorizontalCalendar(
             state = state,
@@ -86,6 +87,20 @@ fun CalendarUI() {
             }
         )
     }
+    MonthPicker(
+        visible = showDialog,
+        currentMonth = Calendar.getInstance().get(Calendar.MONTH),
+        currentYear = Year.now().value,
+        confirmClicked = {month, year->
+            coroutineScope.launch {
+                state.scrollToMonth(YearMonth.of(year, month))
+                showDialog = false
+            }
+        },
+        cancelClicked = {
+            showDialog = false
+        },
+    )
 }
 
 @Composable
@@ -114,34 +129,3 @@ fun DaysOfWeekTitle(daysOfWeek: List<DayOfWeek>) {
     }
 }
 
-@Composable
-fun CalendarTitle(
-    currentMonth: YearMonth,
-    goToPrevious: () -> Unit,
-    goToNext: () -> Unit,
-) {
-    Row(
-        modifier = Modifier.height(40.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        CalendarNavigationIcon(
-            icon = painterResource(id = R.drawable.ic_chevron_left),
-            contentDescription = "Previous",
-            onClick = goToPrevious,
-        )
-        Text(
-            modifier = Modifier
-                .weight(1f)
-                .testTag("MonthTitle"),
-            text = currentMonth.displayText(),
-            fontSize = 22.sp,
-            textAlign = TextAlign.Center,
-            fontWeight = FontWeight.Medium,
-        )
-        CalendarNavigationIcon(
-            icon = painterResource(id = R.drawable.ic_chevron_right),
-            contentDescription = "Next",
-            onClick = goToNext,
-        )
-    }
-}

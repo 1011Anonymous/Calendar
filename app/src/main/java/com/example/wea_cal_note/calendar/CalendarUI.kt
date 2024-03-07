@@ -4,12 +4,16 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -18,6 +22,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.wea_cal_note.ui.theme.Red10
+import com.example.wea_cal_note.ui.theme.fontFamily
 import com.kizitonwose.calendar.compose.HorizontalCalendar
 import com.kizitonwose.calendar.compose.rememberCalendarState
 import com.kizitonwose.calendar.core.CalendarDay
@@ -81,7 +89,7 @@ fun CalendarUI() {
 
         HorizontalCalendar(
             state = state,
-            dayContent = { Day(it) },
+            dayContent = { Day(it, HolidayViewModel()) },
             monthHeader = {
                 DaysOfWeekTitle(daysOfWeek = daysOfWeek)
             }
@@ -91,7 +99,7 @@ fun CalendarUI() {
         visible = showDialog,
         currentMonth = Calendar.getInstance().get(Calendar.MONTH),
         currentYear = Year.now().value,
-        confirmClicked = {month, year->
+        confirmClicked = { month, year ->
             coroutineScope.launch {
                 state.scrollToMonth(YearMonth.of(year, month))
                 showDialog = false
@@ -104,15 +112,50 @@ fun CalendarUI() {
 }
 
 @Composable
-fun Day(day: CalendarDay) {
+fun Day(
+    day: CalendarDay,
+    holidayViewModel: HolidayViewModel,
+) {
+    val isHoliday by holidayViewModel.isHoliday.observeAsState(false)
+    if (day.date.year <= Year.now().value) {
+        LaunchedEffect(day) {
+            holidayViewModel.checkIfHoliday(day.date.year, day.date.monthValue, day.date.dayOfMonth)
+        }
+    }
+
     Box(
-        modifier = Modifier.aspectRatio(1f),
-        contentAlignment = Alignment.Center
+        modifier = Modifier
+            .aspectRatio(1f),
+        contentAlignment = Alignment.Center,
     ) {
+
         Text(
             text = day.date.dayOfMonth.toString(),
             color = if (day.position == DayPosition.MonthDate) Color.Black else Color.Gray
         )
+
+        Text(
+            modifier = Modifier
+                .size(10.dp)
+                .absoluteOffset(20.dp, (-20).dp),
+            color = if (day.position == DayPosition.MonthDate) Red10 else Color.Gray,
+            text = if (isHoliday) "休" else "",
+            fontSize = 10.sp,
+            fontFamily = fontFamily,
+        )
+
+        Text(
+            modifier = Modifier
+                .align(Alignment.BottomCenter),
+            text = convertGregorianToChineseLunar(
+                day.date.year,
+                day.date.monthValue,
+                day.date.dayOfMonth
+            ),
+            fontSize = 10.sp,
+            fontFamily = fontFamily,
+        )
+
     }
 }
 

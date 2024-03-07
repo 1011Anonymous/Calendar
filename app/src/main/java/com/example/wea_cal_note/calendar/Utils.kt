@@ -1,5 +1,7 @@
 package com.example.wea_cal_note.calendar
 
+import android.icu.util.ChineseCalendar
+import android.icu.util.GregorianCalendar
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
@@ -87,3 +89,46 @@ fun Month.displayText(short: Boolean = true): String {
     val style = if (short) TextStyle.SHORT else TextStyle.FULL
     return getDisplayName(style, Locale.SIMPLIFIED_CHINESE)
 }
+
+fun convertGregorianToChineseLunar(
+    year: Int,
+    month: Int,
+    day: Int
+): String {
+    val gregorianCalendar = GregorianCalendar(year, month - 1, day)
+    val chineseCalendar = ChineseCalendar()
+
+    chineseCalendar.time = gregorianCalendar.time
+
+    //val lunarMonth = chineseCalendar.get(ChineseCalendar.MONTH) + 1
+    val lunarDay = chineseCalendar.get(ChineseCalendar.DAY_OF_MONTH)
+
+    return getChineseDay(lunarDay)
+}
+
+val chineseNumbers = mapOf(
+    0 to "零",
+    1 to "一",
+    2 to "二",
+    3 to "三",
+    4 to "四",
+    5 to "五",
+    6 to "六",
+    7 to "七",
+    8 to "八",
+    9 to "九",
+    10 to "十"
+)
+
+fun getChineseDay(day: Int): String {
+    return when (day) {
+        in 1..10 -> "初" + chineseNumbers[day]!!
+        10 -> "初十"
+        in 11..19 -> "十" + chineseNumbers[day % 10]!!
+        20 -> "二十"
+        30 -> "三十"
+        else -> "廿" + chineseNumbers[day % 10]!!
+    }
+}
+
+

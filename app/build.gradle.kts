@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("com.chaquo.python")
 }
 
 android {
@@ -18,6 +19,11 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        ndk {
+            abiFilters += listOf("arm64-v8a", "x86_64")
+        }
+
     }
 
     buildTypes {
@@ -60,6 +66,8 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
     implementation("com.kizitonwose.calendar:compose:2.5.0")
+    implementation("androidx.compose.runtime:runtime-livedata:1.6.3")
+    implementation("androidx.compose.ui:ui-text-google-fonts:1.6.2")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
@@ -67,4 +75,16 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+}
+
+chaquopy {
+    defaultConfig {
+        version = "3.12"
+
+        buildPython("C:/Users/Heisnberg/AppData/Local/Programs/Python/Python312/python.exe")
+
+        pip {
+            install("chinesecalendar")
+        }
+    }
 }

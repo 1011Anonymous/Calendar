@@ -1,6 +1,8 @@
 package com.example.wea_cal_note.calendar
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,6 +11,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -24,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.wea_cal_note.ui.theme.Blue10
 import com.example.wea_cal_note.ui.theme.Red10
 import com.example.wea_cal_note.ui.theme.fontFamily
 import com.kizitonwose.calendar.compose.HorizontalCalendar
@@ -36,6 +40,7 @@ import com.kizitonwose.calendar.core.nextMonth
 import com.kizitonwose.calendar.core.previousMonth
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
+import java.time.LocalDate
 import java.time.Year
 import java.time.YearMonth
 import java.time.format.TextStyle
@@ -63,7 +68,9 @@ fun CalendarUI() {
     )
     val coroutineScope = rememberCoroutineScope()
     val visibleMonth = rememberFirstMostVisibleMonth(state = state, viewportPercent = 90f)
+    val today = remember { LocalDate.now() }
     var showDialog by remember { mutableStateOf(false) }
+    var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
 
     Column(
         modifier = Modifier
@@ -89,7 +96,16 @@ fun CalendarUI() {
 
         HorizontalCalendar(
             state = state,
-            dayContent = { Day(it, HolidayViewModel()) },
+            dayContent = { day ->
+                Day(
+                    day,
+                    HolidayViewModel(),
+                    isSelected = selectedDate == day.date,
+                    isToday = today == day.date
+                ) { day ->
+                    selectedDate = if (selectedDate == day.date) null else day.date
+                }
+            },
             monthHeader = {
                 DaysOfWeekTitle(daysOfWeek = daysOfWeek)
             }
@@ -115,6 +131,9 @@ fun CalendarUI() {
 fun Day(
     day: CalendarDay,
     holidayViewModel: HolidayViewModel,
+    isSelected: Boolean,
+    isToday: Boolean,
+    onClick: (CalendarDay) -> Unit
 ) {
     val isHoliday by holidayViewModel.isHoliday.observeAsState(false)
     if (day.date.year <= Year.now().value) {
@@ -125,7 +144,36 @@ fun Day(
 
     Box(
         modifier = Modifier
-            .aspectRatio(1f),
+            .then(
+                if (isToday) {
+                    Modifier
+                        .aspectRatio(1f)
+                        .clickable(
+                            enabled = day.position == DayPosition.MonthDate,
+                            onClick = { onClick(day) },
+                        )
+                        .background(
+                            color = if (isSelected) Blue10 else Color.Transparent,
+                            shape = CircleShape,
+                        )
+                        .border(
+                        width = 1.dp,
+                        color = Color.Gray,
+                        shape = CircleShape
+                    )
+                } else {
+                    Modifier
+                        .aspectRatio(1f)
+                        .background(
+                            color = if (isSelected) Blue10 else Color.Transparent,
+                            shape = CircleShape,
+                        )
+                        .clickable(
+                            enabled = day.position == DayPosition.MonthDate,
+                            onClick = { onClick(day) },
+                        )
+                }
+            ),
         contentAlignment = Alignment.Center,
     ) {
 

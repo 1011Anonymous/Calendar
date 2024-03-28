@@ -74,7 +74,7 @@ fun CalendarUI() {
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxWidth()
             .background(Color.White)
     ) {
         CalendarTitle(

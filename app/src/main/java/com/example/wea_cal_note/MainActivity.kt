@@ -4,8 +4,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -35,6 +37,7 @@ import com.example.wea_cal_note.calendar.CalendarUI
 import com.example.wea_cal_note.ui.theme.Blue10
 import com.example.wea_cal_note.ui.theme.WeaCalNoteTheme
 import com.example.wea_cal_note.ui.theme.fontFamily
+import com.example.wea_cal_note.weather.presentation.WeatherCard
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -113,6 +116,7 @@ fun MainScreen() {
                 .fillMaxWidth()
         ) {
             CalendarUI()
+            WeatherCard()
         }
     }
 }
